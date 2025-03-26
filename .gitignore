@@ -80,3 +80,5 @@ tests/
 frontend/build
 frontend/node_modules
 frontend/.next
+
+**/test.py
