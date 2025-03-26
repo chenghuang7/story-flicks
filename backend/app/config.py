@@ -9,10 +9,11 @@ class Settings(BaseSettings):
     version: str = "1.0.0"
     
     # provider configuration
-    text_provider: str = "openai"
-    image_provider: str = "openai"
+    text_provider: str = "glm"
+    image_provider: str = "glm"
 
     # base url configuration
+    glm_base_url: str = "https://api.openai.com/v1"
     openai_base_url: str = "https://api.openai.com/v1"
     aliyun_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     deepseek_base_url: str = "https://api.deepseek.com/v1"
@@ -20,18 +21,31 @@ class Settings(BaseSettings):
     siliconflow_base_url: str = "https://api.siliconflow.cn/v1"
 
     # api key
+    glm_api_key: str = ""
     openai_api_key: str = ""
     aliyun_api_key: str = ""
     deepseek_api_key: str = ""
     ollama_api_key: str = ""
     siliconflow_api_key: str = ""
 
-    text_llm_model: str = "gpt-4o"
-    image_llm_model: str = "dall-e-3"
+    text_llm_model: str = "glm-4-flash"
+    image_llm_model: str = "cogview-3-flash"
 
     class Config:
         env_file = ".env"
         # env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+    
+    def to_dict(self):
+       
+        for key, value in self.__dict__.items() :
+            
+            if not key.startswith('_') :
+                print(key,value)
+        # return {
+        #     key: value
+        #     for key, value in self.__dict__.items()
+        #     if not key.startswith('_')  # 忽略私有属性
+        # }
 
 @lru_cache()
 def get_settings() -> Settings:

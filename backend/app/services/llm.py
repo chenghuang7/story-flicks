@@ -4,9 +4,7 @@ from loguru import logger
 from typing import List, Dict, Any
 import json
 from http import HTTPStatus
-from pathlib import PurePosixPath
 import requests
-from urllib.parse import urlparse, unquote
 import random
 
 from app.models.const import LANGUAGE_NAMES, Language
@@ -19,6 +17,7 @@ from app.schemas.llm import (
 )
 settings = get_settings()
 
+settings.to_dict()
 
 openai_client = None
 if settings.openai_api_key:
@@ -33,6 +32,8 @@ if settings.ollama_api_key:
     ollama_client = OpenAI(api_key=settings.ollama_api_key, base_url=settings.ollama_base_url or "http://localhost:11434/v1")
 if settings.siliconflow_api_key:
     siliconflow_client = OpenAI(api_key=settings.siliconflow_api_key, base_url=settings.siliconflow_base_url or "https://api.siliconflow.cn/v1")
+if settings.glm_api_key:
+    glm_client = OpenAI(api_key=settings.glm_api_key, base_url=settings.glm_base_url or "https://open.bigmodel.cn/api/paas/v4")
 
 class LLMService:
     def __init__(self):
@@ -50,11 +51,11 @@ class LLMService:
         Returns:
             List[Dict[str, Any]]: 故事场景列表
         """
-        
         messages = [
             {"role": "system", "content": "你是一个专业的故事创作者，善于创作引人入胜的故事。请只返回JSON格式的内容。"},
             {"role": "user", "content": await self._get_story_prompt(request.story_prompt, request.language, request.segments)}
         ]
+        # print(messages)
         logger.info(f"prompt messages: {json.dumps(messages, indent=4, ensure_ascii=False)}")
         response = await self._generate_response(text_llm_provider = request.text_llm_provider or None, text_llm_model = request.text_llm_model or None, messages=messages, response_format="json_object")
         response = response["list"]
@@ -133,6 +134,18 @@ class LLMService:
                 )
                 logger.info("image generate res", response.data[0].url)
                 return response.data[0].url
+            elif image_llm_provider == "glm":
+                if (resolution != None):
+                    resolution = resolution.replace("*", "x")
+                response = self.openai_client.images.generate(
+                    model=image_llm_model,
+                    prompt=safe_prompt,
+                    size=resolution,
+                    quality="standard",
+                    n=1
+                )
+                logger.info("image generate res", response.data[0].url)
+                return response.data[0].url
             elif image_llm_provider == "siliconflow":
                 if (resolution != None):
                     resolution = resolution.replace("*", "x")
@@ -200,6 +213,9 @@ class LLMService:
         if settings.siliconflow_api_key:
             textLLMList.append("siliconflow")
             imgLLMList.append("siliconflow")
+        if settings.glm_api_key:
+            textLLMList.append("glm")
+            imgLLMList.append("glm")
         return { "textLLMProviders": textLLMList, "imageLLMProviders": imgLLMList }
 
     def _validate_story_response(self, response: any) -> None:
@@ -255,6 +271,8 @@ class LLMService:
             text_client = ollama_client
         elif text_llm_provider == "siliconflow":
             text_client = siliconflow_client
+        elif text_llm_provider == "glm":
+            text_client = glm_client
         if text_llm_model == None:
             text_llm_model = settings.text_llm_model
         response = text_client.chat.completions.create(

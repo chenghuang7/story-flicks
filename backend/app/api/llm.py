@@ -22,7 +22,7 @@ class LLMType(str, Enum):
 async def generate_story(request: StoryGenerationRequest) -> StoryGenerationResponse:
     """生成故事"""
     try:
-        segments = llm_service.generate_story(
+        segments = await llm_service.generate_story(
             request
         )
         return StoryGenerationResponse(segments=segments)
