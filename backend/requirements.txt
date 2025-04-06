@@ -14,3 +14,7 @@ decorator==4.4.2
 imageio-ffmpeg==0.4.9
 requests==2.31.0
 Pillow==9.5.0
+sqlalchemy
+jwt
+pymysql
+passlib

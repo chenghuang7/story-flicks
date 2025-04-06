@@ -5,6 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import api_router
 import os
 
+from app.database.session import with_session
+from app.database.base import engine
+from app.schemas.user import User
+from app.api.login import user_router
+
+from app.config import settings
+
 app = FastAPI(
     title="StoryFlicks Backend API",
     description="Backend API for StoryFlicks application",
@@ -38,4 +45,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(settings.backend_port), reload=True)

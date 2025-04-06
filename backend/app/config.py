@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import Field, BaseModel
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 import os
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
     image_provider: str = "glm"
 
     # base url configuration
-    glm_base_url: str = "https://api.openai.com/v1"
+    glm_base_url: str = "https://open.bigmodel.cn/api/paas/v4"
     openai_base_url: str = "https://api.openai.com/v1"
     aliyun_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     deepseek_base_url: str = "https://api.deepseek.com/v1"
@@ -30,6 +31,16 @@ class Settings(BaseSettings):
 
     text_llm_model: str = "glm-4-flash"
     image_llm_model: str = "cogview-3-flash"
+    
+    video_url: str = "154.8.194.44"
+    backend_port: str = Field("8000", description="后端端口")
+    
+    # 开始配置一些基础服务
+    MYSQL_HOST: str = Field("", description="mysql的连接地址")
+    MYSQL_PORT: int = Field(..., description="mysql的连接端口")
+    MYSQL_USER: str = Field("", description="mysql的连接用户")
+    MYSQL_PASSWD: str = Field("", description="mysql的连接密码")
+    MYSQL_DB: str = Field("", description="mysql的连接库名")
 
     class Config:
         env_file = ".env"
@@ -50,3 +61,5 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
+settings=Settings()
